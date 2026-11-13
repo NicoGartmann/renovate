@@ -1,0 +1,53 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Docker-Compose-Preset für Homelab-Stacks",
+  "extends": [
+    "local>NicoGartmann/renovate//presets/base.json"
+  ],
+  "docker-compose": {
+    "pinDigests": false
+  },
+  "packageRules": [
+    {
+      "description": "Docker-Updates mit docker-Label versehen und nur stabile Releases erlauben",
+      "matchDatasources": [
+        "docker"
+      ],
+      "ignoreUnstable": true,
+      "addLabels": [
+        "docker"
+      ]
+    },
+    {
+      "description": "Custom Versioning für ghcr.io/servercontainers/samba (smbd-only-aX.Y.Z-sX.Y.Z-rN)",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "ghcr.io/servercontainers/samba"
+      ],
+      "versioning": "regex:^smbd-only-a\\d+\\.\\d+\\.\\d+-s(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)-r(?<build>\\d+)$"
+    },
+    {
+      "description": "Datenbank-Major-Updates explizit mit Warn-Label und Hinweis im PR markieren",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "postgres",
+        "redis",
+        "mariadb",
+        "mysql"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "addLabels": [
+        "database-major-upgrade"
+      ],
+      "prBodyNotes": [
+        "⚠️ **Achtung (Datenbank Major-Upgrade):** Ein Major-Versionssprung (insb. bei PostgreSQL) ist nicht direkt binärkompatibel mit bestehenden Datenverzeichnissen (`pgdata`). Vor dem Rollout via `raspi-ansible` muss ein Datenbank-Dump oder `pg_upgrade` durchgeführt werden!"
+      ]
+    }
+  ]
+}

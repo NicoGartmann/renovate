@@ -1,0 +1,63 @@
+name: Renovate
+
+on:
+  schedule:
+    # Jeden Montag um 05:00 UTC (06:00 MEZ / 07:00 MESZ)
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+    inputs:
+      repositories:
+        description: "Optional: Einzelnes Repo scannen (z. B. NicoGartmann/docker-config). Leer lassen für alle Repos aus config.js."
+        required: false
+        default: ""
+        type: string
+      dry_run:
+        description: "Dry-Run Modus (lookup = nur prüfen ohne PRs zu erstellen, false = normaler Lauf)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "lookup"
+      log_level:
+        description: "Renovate Log-Level"
+        required: false
+        default: "info"
+        type: choice
+        options:
+          - "info"
+          - "debug"
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  renovate:
+    name: Run Renovate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout renovate repository
+        uses: actions/checkout@v4
+
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Self-Hosted Renovate
+        uses: renovatebot/github-action@v41.0.14
+        env:
+          LOG_LEVEL: ${{ inputs.log_level || 'info' }}
+          RENOVATE_CONFIG_FILE: config.js
+          RENOVATE_DRY_RUN: ${{ inputs.dry_run == 'lookup' && 'lookup' || '' }}
+          RENOVATE_REPOSITORIES: ${{ inputs.repositories }}
+        with:
+          configurationFile: config.js
+          token: ${{ steps.app-token.outputs.token }}
