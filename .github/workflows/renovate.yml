@@ -52,7 +52,7 @@ jobs:
           owner: ${{ github.repository_owner }}
 
       - name: Self-Hosted Renovate
-        uses: renovatebot/github-action@v41.0.14
+        uses: renovatebot/github-action@v41.0.22
         env:
           LOG_LEVEL: ${{ inputs.log_level || 'info' }}
           RENOVATE_CONFIG_FILE: config.js
